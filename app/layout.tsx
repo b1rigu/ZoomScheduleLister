@@ -5,7 +5,7 @@ import { Poppins } from "next/font/google";
 
 export const metadata = {
   title: "Zoom Schedule Lister",
-  description: "A simple app that allows you to list your Zoom meeting schedules",
+  description: "A simple app that allows you to list your Zoom meeting schedulesf multiple accounts",
 };
 
 const poppins = Poppins({
