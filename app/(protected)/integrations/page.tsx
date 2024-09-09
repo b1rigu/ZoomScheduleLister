@@ -132,11 +132,25 @@ export default async function Integrations() {
           <p className="text-2xl font-bold">Connected zoom accounts</p>
           <ZoomAddButton />
         </div>
-        {zoomUserMeetings.map((oneUserMeetings, index) => (
-          <p key={oneUserMeetings.user_email}>
-            {index + 1}. {oneUserMeetings.user_email}
-          </p>
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {zoomUserMeetings.map((oneUserMeetings) => (
+            <div
+              key={oneUserMeetings.user_email}
+              className="dark:bg-gray-800 bg-gray-300 flex flex-col justify-between items-center rounded-xl p-4 drop-shadow-lg gap-2"
+            >
+              <div>
+                <p className="text-lg font-bold">{oneUserMeetings.user_email}</p>
+                <p>Upcoming meetings: {oneUserMeetings.meetings.length}</p>
+              </div>
+              {/* <button
+                className="py-1 px-2 flex rounded-md bg-red-400/60 hover:bg-red-500/80"
+              >
+                Disconnect
+              </button> */}
+              {/* Add a button to disconnect integration */}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

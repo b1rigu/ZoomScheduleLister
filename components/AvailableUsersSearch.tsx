@@ -34,7 +34,7 @@ export function AvailableUsersSearch({
   const defaultDateValue = new Date();
   defaultDateValue.setMinutes(0, 0, 0);
   const [searchStartTime, setSearchStartTime] = useState<Date>(defaultDateValue);
-  const [availableUsers, setAvailableUsers] = useState<string[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<string[] | null>(null);
   const [duration, setDuration] = useState<number>(30);
 
   function searchAvailableUsers() {
@@ -83,12 +83,15 @@ export function AvailableUsersSearch({
       </div>
 
       <ul className="mt-4">
-        {availableUsers.map((userEmail) => (
-          <li className="font-bold" key={userEmail}>
-            - {userEmail}
-          </li>
-        ))}
-        {availableUsers.length === 0 && <li className="font-bold">No available accounts on this time</li>}
+        {availableUsers &&
+          availableUsers.map((userEmail) => (
+            <li className="font-bold" key={userEmail}>
+              - {userEmail}
+            </li>
+          ))}
+        {availableUsers && availableUsers.length === 0 && (
+          <li className="font-bold">No available accounts on this time</li>
+        )}
       </ul>
     </div>
   );
