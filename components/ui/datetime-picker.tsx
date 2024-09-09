@@ -9,13 +9,18 @@ import {
   ChevronRight,
   Clock,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DayPicker, DayPickerSingleProps, useNavigation } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { format } from "date-fns";
-import { TimePickerInput } from "../custom/time-picker-input";
-import { Input } from "./input";
 
 export type DatetimePickerProps = Omit<DayPickerSingleProps, "mode" | "onSelect"> & {
   setDate: (date: Date) => void;
@@ -32,9 +37,13 @@ function DatetimePicker({
   setDuration: setGlobalDuration,
   ...props
 }: DatetimePickerProps) {
-  const minuteRef = React.useRef<HTMLInputElement>(null);
-  const hourRef = React.useRef<HTMLInputElement>(null);
   const { selected: selectedDate } = props as { selected: Date };
+  const minutesArray = Array.from({ length: 12 }, (_, index) => index * 5);
+  const hoursArray = Array.from({ length: 24 }, (_, index) => index);
+  const durationHours = Math.floor(duration / 60);
+  const durationMinutes = duration % 60;
+  console.log(duration)
+
   const setDate = (dateInput: Date) => {
     const date = new Date(selectedDate);
     date.setDate(dateInput.getDate());
@@ -42,15 +51,24 @@ function DatetimePicker({
     date.setFullYear(dateInput.getFullYear());
     setGlobalDate(date);
   };
-  const setTime = (dateInput: Date | undefined) => {
-    if (!dateInput) return;
+  const setTimeHours = (hours: string) => {
+    const hoursNumber = parseInt(hours);
     const time = new Date(selectedDate);
-    time.setHours(dateInput.getHours());
-    time.setMinutes(dateInput.getMinutes());
+    time.setHours(hoursNumber);
     setGlobalDate(time);
   };
-  const setDuration = (duration: number) => {
-    setGlobalDuration(duration);
+  const setTimeMinutes = (minutes: string) => {
+    const minutesNumber = parseInt(minutes);
+    const time = new Date(selectedDate);
+    time.setMinutes(minutesNumber);
+    setGlobalDate(time);
+  };
+  const setDuration = (duration: number, indicator: "hours" | "minutes") => {
+    if (indicator === "hours") {
+      setGlobalDuration(duration * 60 + durationMinutes);
+    } else {
+      setGlobalDuration(duration + durationHours * 60);
+    }
   };
   return (
     <>
@@ -178,21 +196,62 @@ function DatetimePicker({
           </div>
           <div className="font-medium">
             <div className="flex items-center gap-2">
-              <TimePickerInput
-                picker="hours"
-                date={selectedDate}
-                setDate={setTime}
-                ref={hourRef}
-                onRightFocus={() => minuteRef.current?.focus()}
-              />
+              <Select
+                value={selectedDate.getHours().toString()}
+                onValueChange={(value) => setTimeHours(value)}
+              >
+                <SelectTrigger className="w-[65px]">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  {hoursArray.map((hour) => (
+                    <SelectItem key={hour} value={hour.toString()}>
+                      {hour.toString().length === 1 ? `0${hour}` : hour}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <span>:</span>
-              <TimePickerInput
-                picker="minutes"
-                date={selectedDate}
-                setDate={setTime}
-                ref={minuteRef}
-                onLeftFocus={() => hourRef.current?.focus()}
-              />
+              <Select
+                value={selectedDate.getMinutes().toString()}
+                onValueChange={(value) => setTimeMinutes(value)}
+              >
+                <SelectTrigger className="w-[65px]">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  {minutesArray.map((minute) => (
+                    <SelectItem key={minute} value={minute.toString()}>
+                      {minute.toString().length === 1 ? `0${minute}` : minute}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-between mt-2">
+          <div className="flex gap-2 items-center">
+            <Clock className="h-5 w-5" />
+            <p className="text-sm font-medium">Duration (hours)</p>
+          </div>
+          <div className="font-medium">
+            <div className="flex items-center gap-2">
+              <Select
+                value={durationHours.toString()}
+                onValueChange={(value) => setDuration(parseInt(value), "hours")}
+              >
+                <SelectTrigger className="w-[65px]">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  {hoursArray.map((hour) => (
+                    <SelectItem key={hour} value={hour.toString()}>
+                      {hour.toString()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -203,13 +262,21 @@ function DatetimePicker({
           </div>
           <div className="font-medium">
             <div className="flex items-center gap-2">
-              <Input
-                className="w-[96px] text-center font-mono text-base tabular-nums caret-transparent focus:bg-accent focus:text-accent-foreground [&::-webkit-inner-spin-button]:appearance-none"
-                type="number"
-                maxLength={5}
-                value={duration}
-                onChange={(e) => setDuration(parseInt(e.target.value))}
-              />
+              <Select
+                value={durationMinutes.toString()}
+                onValueChange={(value) => setDuration(parseInt(value), "minutes")}
+              >
+                <SelectTrigger className="w-[65px]">
+                  <SelectValue placeholder="" />
+                </SelectTrigger>
+                <SelectContent>
+                  {minutesArray.map((minute) => (
+                    <SelectItem key={minute} value={minute.toString()}>
+                      {minute.toString()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

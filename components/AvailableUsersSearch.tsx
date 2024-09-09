@@ -31,7 +31,9 @@ export function AvailableUsersSearch({
 }: {
   zoomUserMeetings: ZoomUserMeetingType[];
 }) {
-  const [searchStartTime, setSearchStartTime] = useState<Date>(new Date());
+  const defaultDateValue = new Date();
+  defaultDateValue.setMinutes(0, 0, 0);
+  const [searchStartTime, setSearchStartTime] = useState<Date>(defaultDateValue);
   const [availableUsers, setAvailableUsers] = useState<string[]>([]);
   const [duration, setDuration] = useState<number>(30);
 
@@ -39,6 +41,10 @@ export function AvailableUsersSearch({
     const searchEndTime = new Date(searchStartTime.getTime() + duration * 60 * 1000);
     setAvailableUsers(findAvailableUsers(zoomUserMeetings, searchStartTime, searchEndTime));
   }
+
+  // function formatUserEmail(userEmail: string) {
+  //   return userEmail.split("@")[0];
+  // }
 
   return (
     <div>

@@ -25,3 +25,10 @@ export type ZoomUserResponse = {
   display_name: string;
   id: string;
 };
+
+export type SupabaseIntegration = {
+  access_token: string;
+  refresh_token: string;
+  zoom_user_email: string;
+  valid_to: string;
+};

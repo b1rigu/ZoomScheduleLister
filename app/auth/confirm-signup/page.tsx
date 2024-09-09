@@ -4,7 +4,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 
 // You have to change the email template in the supabase dashboard to include {{ ..Token }} in the body
 // and add button to redirect to this page with the email {{ .SiteURL }}/auth/confirm-signup?email={{ .Email }}
-function ConfirmLoginPage({
+export default async function ConfirmLoginPage({
   searchParams,
 }: {
   searchParams: { email: string; message?: string; redirect?: string };
@@ -12,6 +12,14 @@ function ConfirmLoginPage({
   if (!searchParams.email) {
     return redirect("/");
   }
+
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) return redirect("/integrations");
 
   const confirmOTP = async (formData: FormData) => {
     "use server";
@@ -67,5 +75,3 @@ function ConfirmLoginPage({
     </div>
   );
 }
-
-export default ConfirmLoginPage;

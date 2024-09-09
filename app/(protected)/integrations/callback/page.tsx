@@ -79,11 +79,18 @@ export default async function IntegrationsCallback({
 
     if (zoomUserData) {
       const supabase = createClient();
-      await supabase.from("zoom_integrations").insert({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        zoom_user_email: zoomUserData.email,
-      });
+      const { data: zoomUserIntegration } = await supabase
+        .from("zoom_integrations")
+        .select("zoom_user_email")
+        .eq("zoom_user_email", zoomUserData.email);
+
+      if (zoomUserIntegration && zoomUserIntegration.length === 0) {
+        await supabase.from("zoom_integrations").insert({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+          zoom_user_email: zoomUserData.email,
+        });
+      }
       redirect("/integrations");
     }
   }
