@@ -116,7 +116,9 @@ async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[]> {
   return zoomUserMeetings;
 }
 
-async function disconnectIntegration(zoomUserEmail: string) {
+async function disconnectIntegration(formData: FormData) {
+  "use server";
+  const zoomUserEmail = formData.get("zoomUserEmail");
   const supabase = createClient();
   await supabase.from("zoom_integrations").delete().eq("zoom_user_email", zoomUserEmail);
   revalidatePath("/integrations");
@@ -149,8 +151,13 @@ export default async function Integrations() {
                 <p className="text-lg font-bold">{oneUserMeetings.user_email}</p>
                 <p>Upcoming meetings: {oneUserMeetings.meetings.length}</p>
               </div>
-              <form action={() => disconnectIntegration(oneUserMeetings.user_email)}>
-                <button type="submit" className="py-1 px-2 flex rounded-md bg-red-400/60 hover:bg-red-500/80">
+              {/* Learnt how to use form action and that you can't pass arguments to it other than the form data it auto passes */}
+              <form action={disconnectIntegration}>
+                <input type="hidden" name="zoomUserEmail" value={oneUserMeetings.user_email} />
+                <button
+                  type="submit"
+                  className="py-1 px-2 flex rounded-md bg-red-400/60 hover:bg-red-500/80"
+                >
                   Disconnect
                 </button>
               </form>
