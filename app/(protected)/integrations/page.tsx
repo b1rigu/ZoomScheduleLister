@@ -115,6 +115,11 @@ async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[]> {
   return zoomUserMeetings;
 }
 
+function disconnectIntegration(zoomUserEmail: string) {
+  const supabase = createClient();
+  supabase.from("zoom_integrations").delete().eq("zoom_user_email", zoomUserEmail);
+}
+
 export default async function Integrations() {
   const zoomUserMeetings = await getZoomUsersMeetings();
 
@@ -142,12 +147,11 @@ export default async function Integrations() {
                 <p className="text-lg font-bold">{oneUserMeetings.user_email}</p>
                 <p>Upcoming meetings: {oneUserMeetings.meetings.length}</p>
               </div>
-              {/* <button
-                className="py-1 px-2 flex rounded-md bg-red-400/60 hover:bg-red-500/80"
-              >
-                Disconnect
-              </button> */}
-              {/* Add a button to disconnect integration */}
+              <form action={() => disconnectIntegration(oneUserMeetings.user_email)}>
+                <button type="submit" className="py-1 px-2 flex rounded-md bg-red-400/60 hover:bg-red-500/80">
+                  Disconnect
+                </button>
+              </form>
             </div>
           ))}
         </div>
