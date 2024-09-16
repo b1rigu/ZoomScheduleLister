@@ -7,6 +7,7 @@ import {
   ZoomMeetings,
   ZoomUserMeetingType,
 } from "@/utils/types";
+import { revalidatePath } from "next/cache";
 
 async function refreshAccessToken(refreshToken: string): Promise<ZoomAccessTokenResponse | null> {
   try {
@@ -118,6 +119,7 @@ async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[]> {
 function disconnectIntegration(zoomUserEmail: string) {
   const supabase = createClient();
   supabase.from("zoom_integrations").delete().eq("zoom_user_email", zoomUserEmail);
+  revalidatePath("/integrations");
 }
 
 export default async function Integrations() {
