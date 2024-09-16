@@ -116,9 +116,9 @@ async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[]> {
   return zoomUserMeetings;
 }
 
-function disconnectIntegration(zoomUserEmail: string) {
+async function disconnectIntegration(zoomUserEmail: string) {
   const supabase = createClient();
-  supabase.from("zoom_integrations").delete().eq("zoom_user_email", zoomUserEmail);
+  await supabase.from("zoom_integrations").delete().eq("zoom_user_email", zoomUserEmail);
   revalidatePath("/integrations");
 }
 
