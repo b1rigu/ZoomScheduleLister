@@ -1,24 +1,27 @@
-export type ZoomUserMeetingType = {
+export type SingleUserMeetings = {
   meetings: {
     start_time: Date;
     end_time: Date;
   }[];
-  user_email: string;
+  userEmail: string;
+  adminIndex: number;
 };
 
-export type ZoomMeetings = {
+export type ZoomUserMeetingType = {
+  usersMeetings: SingleUserMeetings[];
+  index: number;
+};
+
+export type ZoomSingleUserMeetings = {
   meetings: {
     start_time: string;
     duration: number;
-    timezone: string;
   }[];
 };
 
-export type ZoomAccessTokenResponse = {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
-};
+export type ZoomUsersResponse = {
+  users: ZoomUserResponse[];
+}
 
 export type ZoomUserResponse = {
   email: string;
@@ -27,8 +30,10 @@ export type ZoomUserResponse = {
 };
 
 export type SupabaseIntegration = {
+  id: string;
   access_token: string;
-  refresh_token: string;
-  zoom_user_email: string;
   valid_to: string;
+  account_id: string;
+  client_id: string;
+  client_secret: string;
 };

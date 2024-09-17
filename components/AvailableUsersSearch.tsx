@@ -1,6 +1,6 @@
 "use client";
 
-import { ZoomUserMeetingType } from "@/utils/types";
+import { SingleUserMeetings } from "@/utils/types";
 import { useState } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { DatetimePicker } from "./ui/datetime-picker";
 
 function findAvailableUsers(
-  zoomUserMeetings: ZoomUserMeetingType[],
+  zoomUserMeetings: SingleUserMeetings[],
   searchStartTime: Date,
   searchEndTime: Date
 ): string[] {
@@ -23,14 +23,15 @@ function findAvailableUsers(
           (meeting) => meeting.start_time < searchEndTime && meeting.end_time > searchStartTime // Check if meeting overlaps the search time
         )
     )
-    .map((user) => user.user_email); // Return the emails of available users
+    .map((user) => user.userEmail); // Return the emails of available users
 }
 
 export function AvailableUsersSearch({
   zoomUserMeetings,
 }: {
-  zoomUserMeetings: ZoomUserMeetingType[];
+  zoomUserMeetings: SingleUserMeetings[];
 }) {
+  console.log(zoomUserMeetings);
   const defaultDateValue = new Date();
   defaultDateValue.setMinutes(0, 0, 0);
   const [searchStartTime, setSearchStartTime] = useState<Date>(defaultDateValue);
