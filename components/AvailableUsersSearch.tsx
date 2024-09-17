@@ -31,7 +31,6 @@ export function AvailableUsersSearch({
 }: {
   zoomUserMeetings: SingleUserMeetings[];
 }) {
-  console.log(zoomUserMeetings);
   const defaultDateValue = new Date();
   defaultDateValue.setMinutes(0, 0, 0);
   const [searchStartTime, setSearchStartTime] = useState<Date>(defaultDateValue);

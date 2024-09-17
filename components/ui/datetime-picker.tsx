@@ -42,7 +42,6 @@ function DatetimePicker({
   const hoursArray = Array.from({ length: 24 }, (_, index) => index);
   const durationHours = Math.floor(duration / 60);
   const durationMinutes = duration % 60;
-  console.log(duration)
 
   const setDate = (dateInput: Date) => {
     const date = new Date(selectedDate);
