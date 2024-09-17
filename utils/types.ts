@@ -4,12 +4,12 @@ export type SingleUserMeetings = {
     end_time: Date;
   }[];
   userEmail: string;
-  adminIndex: number;
+  adminEmail: string;
 };
 
 export type ZoomUserMeetingType = {
   usersMeetings: SingleUserMeetings[];
-  index: number;
+  email: string;
 };
 
 export type ZoomSingleUserMeetings = {
@@ -36,4 +36,5 @@ export type SupabaseIntegration = {
   account_id: string;
   client_id: string;
   client_secret: string;
+  zoom_user_email: string;
 };

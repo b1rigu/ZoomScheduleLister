@@ -8,7 +8,7 @@ async function disconnectIntegration(formData: FormData) {
   "use server";
   const zoomUserEmail = formData.get("zoomUserEmail");
   const supabase = createClient();
-  await supabase.from("zoom_integrations").delete().eq("account_id", zoomUserEmail);
+  await supabase.from("zoom_integrations").delete().eq("zoom_user_email", zoomUserEmail);
   revalidatePath("/integrations");
 }
 
@@ -38,13 +38,11 @@ export default async function Integrations() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {zoomUserMeetings.map((subUsersMeetings) => (
             <div
-              key={subUsersMeetings.index}
+              key={subUsersMeetings.email}
               className="dark:bg-gray-800 bg-gray-300 flex flex-col rounded-xl p-4 drop-shadow-lg gap-2"
             >
-              <p className="text-lg font-bold">
-                {subUsersMeetings.index + 1}th account ({subUsersMeetings.usersMeetings.length}{" "}
-                users)
-              </p>
+              <p className="text-lg font-bold">{subUsersMeetings.email}</p>
+              <p>{subUsersMeetings.usersMeetings.length} users</p>
               {subUsersMeetings.usersMeetings.map((subUser) => (
                 <div key={subUser.userEmail}>
                   <hr className="border-gray-200 border-1 w-full mb-2" />
@@ -53,15 +51,15 @@ export default async function Integrations() {
                 </div>
               ))}
               {/* Learnt how to use form action and that you can't pass arguments to it other than the form data it auto passes */}
-              {/* <form action={disconnectIntegration}>
-                <input type="hidden" name="zoomUserEmail" value={oneUserMeetings.userEmail} />
+              <form action={disconnectIntegration}>
+                <input type="hidden" name="zoomUserEmail" value={subUsersMeetings.email} />
                 <button
                   type="submit"
                   className="py-1 px-2 flex rounded-md bg-red-400/60 hover:bg-red-500/80"
                 >
                   Disconnect
                 </button>
-              </form> */}
+              </form>
             </div>
           ))}
         </div>

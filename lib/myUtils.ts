@@ -53,13 +53,40 @@ function isAccessTokenExpired(validToString: string): boolean {
   return validToDate < currentDate;
 }
 
+export async function getAccountOwnerEmail(accessToken: string): Promise<string> {
+  try {
+    const response = await fetch("https://api.zoom.us/v2/users/me", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      next: {
+        revalidate: 10,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw error;
+    }
+
+    const data = await response.json();
+
+    return data.email;
+  } catch (error) {
+    console.log("Error getting email:", error);
+    throw error;
+  }
+}
+
 async function getActiveUsersOfSingleAccount(accessToken: string): Promise<ZoomUsersResponse> {
   try {
     const response = await fetch("https://api.zoom.us/v2/users?page_size=300", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-      cache: "no-store",
+      next: {
+        revalidate: 10,
+      },
     });
 
     if (!response.ok) {
@@ -80,7 +107,7 @@ async function getSingleUserMeetings(
   accessToken: string,
   userId: string,
   userEmail: string,
-  adminIndex: number
+  adminEmail: string
 ): Promise<SingleUserMeetings> {
   try {
     const response = await fetch(
@@ -89,7 +116,9 @@ async function getSingleUserMeetings(
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-        cache: "no-store",
+        next: {
+          revalidate: 10,
+        },
       }
     );
 
@@ -110,7 +139,7 @@ async function getSingleUserMeetings(
         };
       }),
       userEmail: userEmail,
-      adminIndex: adminIndex,
+      adminEmail: adminEmail,
     };
   } catch (error) {
     console.log("Error fetching meetings:", error);
@@ -126,6 +155,7 @@ async function getSingleUserMeetingsWithRateLimit(
   customUsersResponses: {
     users: ZoomUserResponse[];
     accessToken: string;
+    adminEmail: string;
   }[],
   limit = 2,
   interval = 1000
@@ -134,13 +164,13 @@ async function getSingleUserMeetingsWithRateLimit(
   let queue = [];
 
   const moreCustomUsersResponses = customUsersResponses
-    .map((customUserResponse, index) => {
+    .map((customUserResponse) => {
       return customUserResponse.users.map((user) => {
         return {
           userEmail: user.email,
           accessToken: customUserResponse.accessToken,
           userId: user.id,
-          adminIndex: index,
+          adminEmail: customUserResponse.adminEmail,
         };
       });
     })
@@ -154,7 +184,7 @@ async function getSingleUserMeetingsWithRateLimit(
           userResponses.accessToken,
           userResponses.userId,
           userResponses.userEmail,
-          userResponses.adminIndex
+          userResponses.adminEmail
         )
       );
 
@@ -175,25 +205,21 @@ async function getSingleUserMeetingsWithRateLimit(
   return results;
 }
 
-function groupByAdminIndex(data: SingleUserMeetings[]): ZoomUserMeetingType[] {
-  const grouped = data.reduce<Record<number, SingleUserMeetings[]>>((acc, item) => {
-    const key = item.adminIndex;
+function groupByAdmin(singleUserMeetings: SingleUserMeetings[]): ZoomUserMeetingType[] {
+  const grouped = singleUserMeetings.reduce(
+    (acc: { [key: string]: SingleUserMeetings[] }, curr) => {
+      if (!acc[curr.adminEmail]) {
+        acc[curr.adminEmail] = [];
+      }
+      acc[curr.adminEmail].push(curr);
+      return acc;
+    },
+    {}
+  );
 
-    // If the group for this key doesn't exist, create an empty array for it
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-
-    // Add the current item to the group
-    acc[key].push(item);
-
-    return acc;
-  }, {});
-
-  // Convert the grouped object into an array of ZoomUserMeetingType
-  return Object.keys(grouped).map((key) => ({
-    index: Number(key),
-    usersMeetings: grouped[Number(key)],
+  return Object.keys(grouped).map((adminEmail) => ({
+    email: adminEmail,
+    usersMeetings: grouped[adminEmail],
   }));
 }
 
@@ -201,11 +227,11 @@ export async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[] | "E
   const supabase = createClient();
   const { data: zoomIntegrations } = await supabase
     .from("zoom_integrations")
-    .select("id, access_token, valid_to, account_id, client_id, client_secret")
+    .select("id, access_token, valid_to, account_id, client_id, client_secret, zoom_user_email")
     .returns<SupabaseIntegration[]>();
 
   if (!zoomIntegrations) {
-    return [];
+    return "Error";
   }
 
   const allIntegrationsAccessTokensPromises = zoomIntegrations.map((integration) => {
@@ -276,12 +302,13 @@ export async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[] | "E
     return {
       users: result.users,
       accessToken: accessTokens[index],
+      adminEmail: zoomIntegrations[index].zoom_user_email,
     };
   });
 
   return getSingleUserMeetingsWithRateLimit(customUsersResponses, 1, 500)
     .then((userMeetings) => {
-      return groupByAdminIndex(userMeetings);
+      return groupByAdmin(userMeetings);
     })
     .catch((error) => {
       console.log("Error:", error);

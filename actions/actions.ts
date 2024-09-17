@@ -1,6 +1,6 @@
 "use server";
 
-import { getAccessToken } from "@/lib/myUtils";
+import { getAccessToken, getAccountOwnerEmail } from "@/lib/myUtils";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -39,11 +39,13 @@ export const addZoomIntegration = async (formData: FormData): Promise<"Success" 
     }
 
     if (zoomUserIntegration && zoomUserIntegration.length === 0) {
+      const ownerEmail = await getAccountOwnerEmail(accessToken);
       const { error: insertError } = await supabase.from("zoom_integrations").insert({
         access_token: accessToken,
         account_id: accountId,
         client_id: clientId,
         client_secret: clientSecret,
+        zoom_user_email: ownerEmail,
       });
 
       if (insertError) {
@@ -54,6 +56,7 @@ export const addZoomIntegration = async (formData: FormData): Promise<"Success" 
     revalidatePath("/integrations");
     return "Success";
   } catch (error) {
+    console.log("Error adding zoom account:", error);
     return "Error";
   }
 };
