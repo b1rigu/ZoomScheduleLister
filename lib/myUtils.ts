@@ -224,21 +224,12 @@ function groupByAdmin(singleUserMeetings: SingleUserMeetings[]): ZoomUserMeeting
   }));
 }
 
-function isZoomError(obj: any): obj is ZoomError {
-  return (
-    typeof obj === "object" &&
-    obj !== null &&
-    typeof obj.error === "string" &&
-    typeof obj.reason === "string"
-  );
-}
-
 function handleZoomAPIError(error: any) {
   let errorMessage: string;
-  if (error instanceof Error) {
-    errorMessage = error.message;
-  } else if (isZoomError(error)) {
+  if (error.error) {
     errorMessage = error.error;
+  } else if (error.message) {
+    errorMessage = error.message;
   } else {
     errorMessage = "Unexpected error occured";
   }
@@ -255,7 +246,9 @@ export async function getZoomUsersMeetings(): Promise<{
   const supabase = createClient();
   const { data: zoomIntegrations, error: supabaseZoomIntegrationsError } = await supabase
     .from("decrypted_zoom_integrations")
-    .select("id, access_token, valid_to, account_id, client_id, decrypted_client_secret, zoom_user_email")
+    .select(
+      "id, access_token, valid_to, account_id, client_id, decrypted_client_secret, zoom_user_email"
+    )
     .returns<SupabaseIntegration[]>();
 
   if (supabaseZoomIntegrationsError) {
@@ -342,6 +335,7 @@ export async function getZoomUsersMeetings(): Promise<{
     };
   });
 
+  // The free plan has a limit of 2 requests per second for meeting list api
   return getSingleUserMeetingsWithRateLimit(customUsersResponses, 1, 500)
     .then((userMeetings) => {
       return {
