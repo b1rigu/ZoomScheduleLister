@@ -21,7 +21,7 @@ export type ZoomSingleUserMeetings = {
 
 export type ZoomUsersResponse = {
   users: ZoomUserResponse[];
-}
+};
 
 export type ZoomUserResponse = {
   email: string;
@@ -35,6 +35,11 @@ export type SupabaseIntegration = {
   valid_to: string;
   account_id: string;
   client_id: string;
-  client_secret: string;
+  decrypted_client_secret: string;
   zoom_user_email: string;
+};
+
+export type ZoomError = {
+  error: string;
+  reason: string;
 };

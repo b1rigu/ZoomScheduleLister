@@ -8,6 +8,11 @@ export function Header() {
       <div className="w-full max-w-4xl flex justify-between items-center p-3 text-sm">
         <AuthButton />
         <div className="flex gap-4">
+          <Link href="/">
+            <div className="py-2 px-3 flex rounded-md bg-slate-500/20 hover:bg-slate-500/30">
+              Home
+            </div>
+          </Link>
           <Link href="/integrations">
             <div className="py-2 px-3 flex rounded-md bg-slate-500/20 hover:bg-slate-500/30">
               Integrations

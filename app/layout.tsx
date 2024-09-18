@@ -2,14 +2,16 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Header } from "@/components/Header";
 import { Poppins } from "next/font/google";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata = {
   title: "Zoom Schedule Lister",
-  description: "A simple app that allows you to list your Zoom meeting schedulesf multiple accounts",
+  description:
+    "A simple app that allows you to list your Zoom meeting schedulesf multiple accounts",
 };
 
 const poppins = Poppins({
-  weight: ['400', '700'],
+  weight: ["400", "700"],
   subsets: ["latin"],
 });
 
@@ -26,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <div className="flex-grow">{children}</div>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );

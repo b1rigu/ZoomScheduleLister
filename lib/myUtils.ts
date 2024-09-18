@@ -5,6 +5,7 @@ import {
   ZoomUserResponse,
   ZoomUserMeetingType,
   SupabaseIntegration,
+  ZoomError,
 } from "@/utils/types";
 import { createClient } from "@/utils/supabase/server";
 
@@ -223,15 +224,52 @@ function groupByAdmin(singleUserMeetings: SingleUserMeetings[]): ZoomUserMeeting
   }));
 }
 
-export async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[] | "Error"> {
+function isZoomError(obj: any): obj is ZoomError {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    typeof obj.error === "string" &&
+    typeof obj.reason === "string"
+  );
+}
+
+function handleZoomAPIError(error: any) {
+  let errorMessage: string;
+  if (error instanceof Error) {
+    errorMessage = error.message;
+  } else if (isZoomError(error)) {
+    errorMessage = error.error;
+  } else {
+    errorMessage = "Unexpected error occured";
+  }
+  return {
+    zoomUserMeetings: null,
+    error: errorMessage,
+  };
+}
+
+export async function getZoomUsersMeetings(): Promise<{
+  zoomUserMeetings: ZoomUserMeetingType[] | null;
+  error: string | null;
+}> {
   const supabase = createClient();
-  const { data: zoomIntegrations } = await supabase
-    .from("zoom_integrations")
-    .select("id, access_token, valid_to, account_id, client_id, client_secret, zoom_user_email")
+  const { data: zoomIntegrations, error: supabaseZoomIntegrationsError } = await supabase
+    .from("decrypted_zoom_integrations")
+    .select("id, access_token, valid_to, account_id, client_id, decrypted_client_secret, zoom_user_email")
     .returns<SupabaseIntegration[]>();
 
+  if (supabaseZoomIntegrationsError) {
+    return {
+      zoomUserMeetings: null,
+      error: supabaseZoomIntegrationsError.message,
+    };
+  }
+
   if (!zoomIntegrations) {
-    return "Error";
+    return {
+      zoomUserMeetings: null,
+      error: "Unexpected error fetching integrations",
+    };
   }
 
   const allIntegrationsAccessTokensPromises = zoomIntegrations.map((integration) => {
@@ -240,7 +278,7 @@ export async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[] | "E
       return getAccessToken(
         integration.account_id,
         integration.client_id,
-        integration.client_secret,
+        integration.decrypted_client_secret,
         integration.id
       );
     }
@@ -270,8 +308,7 @@ export async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[] | "E
       });
     });
   } catch (error) {
-    console.error("Error: ", error);
-    return "Error";
+    return handleZoomAPIError(error);
   }
 
   const activeUsersOfSingleAccountsPromises = accessTokens.map((accessToken) => {
@@ -294,8 +331,7 @@ export async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[] | "E
       }
     );
   } catch (error) {
-    console.error("Error: ", error);
-    return "Error";
+    return handleZoomAPIError(error);
   }
 
   const customUsersResponses = activeUsersOfSingleAccounts.map((result, index) => {
@@ -308,10 +344,12 @@ export async function getZoomUsersMeetings(): Promise<ZoomUserMeetingType[] | "E
 
   return getSingleUserMeetingsWithRateLimit(customUsersResponses, 1, 500)
     .then((userMeetings) => {
-      return groupByAdmin(userMeetings);
+      return {
+        zoomUserMeetings: groupByAdmin(userMeetings),
+        error: null,
+      };
     })
     .catch((error) => {
-      console.log("Error:", error);
-      return "Error";
+      return handleZoomAPIError(error);
     });
 }

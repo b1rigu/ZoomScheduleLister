@@ -3,6 +3,7 @@ import ZoomAddButton from "@/components/ZoomAddButton";
 import { getZoomUsersMeetings } from "@/lib/myUtils";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import ShowToast from "@/components/ShowToast";
 
 async function disconnectIntegration(formData: FormData) {
   "use server";
@@ -13,10 +14,10 @@ async function disconnectIntegration(formData: FormData) {
 }
 
 export default async function Integrations() {
-  const zoomUserMeetings = await getZoomUsersMeetings();
+  const { zoomUserMeetings, error } = await getZoomUsersMeetings();
 
-  if (zoomUserMeetings === "Error") {
-    return <p>Error fetching meetings</p>;
+  if (error || !zoomUserMeetings) {
+    return <ShowToast error={error} />;
   }
 
   const flattenedZoomUserMeetings = zoomUserMeetings.map((meeting) => meeting.usersMeetings).flat();
