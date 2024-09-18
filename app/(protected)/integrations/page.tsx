@@ -43,12 +43,10 @@ export default async function Integrations() {
               className="dark:bg-gray-800 bg-gray-300 flex flex-col rounded-xl p-4 drop-shadow-lg gap-2"
             >
               <p className="text-lg font-bold">{subUsersMeetings.email}</p>
-              <p>{subUsersMeetings.usersMeetings.length} users</p>
+              <p className="font-bold">{subUsersMeetings.usersMeetings.length} users</p>
               {subUsersMeetings.usersMeetings.map((subUser) => (
                 <div key={subUser.userEmail}>
-                  <hr className="border-gray-200 border-1 w-full mb-2" />
-                  <p>{subUser.userEmail}</p>
-                  <p>Upcoming meetings: {subUser.meetings.length}</p>
+                  <p>- {subUser.userEmail}</p>
                 </div>
               ))}
               {/* Learnt how to use form action and that you can't pass arguments to it other than the form data it auto passes */}

@@ -50,13 +50,13 @@ export default function ZoomAddButton() {
                 <Label htmlFor="accountId" className="text-right">
                   Account Id
                 </Label>
-                <Input type="password" name="accountId" id="accountId" className="col-span-3" />
+                <Input type="password" name="accountId" id="accountId" className="col-span-3" required />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="clientId" className="text-right">
                   Client Id
                 </Label>
-                <Input type="password" name="clientId" id="clientId" className="col-span-3" />
+                <Input type="password" name="clientId" id="clientId" className="col-span-3" required />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="clientSecret" className="text-right">
@@ -67,6 +67,7 @@ export default function ZoomAddButton() {
                   name="clientSecret"
                   id="clientSecret"
                   className="col-span-3"
+                  required
                 />
               </div>
               {error && (
