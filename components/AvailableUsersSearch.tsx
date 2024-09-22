@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DatetimePicker } from "./ui/datetime-picker";
+import Link from "next/link";
 
 function findAvailableUsers(
   zoomUserMeetings: SingleUserMeetings[],
@@ -85,8 +86,15 @@ export function AvailableUsersSearch({
       <ul className="mt-4">
         {availableUsers &&
           availableUsers.map((userEmail) => (
-            <li className="font-bold" key={userEmail}>
-              - {userEmail}
+            <li className="text-blue-500 hover:underline" key={userEmail}>
+              <Link
+                target="_blank"
+                rel="noopener noreferrer"
+                href={"https://hioki-co-jp.zoom.us/signin#/login"}
+                onClick={() => navigator.clipboard.writeText(userEmail)}
+              >
+                <p className="text-blue-500 hover:underline">- {userEmail}</p>
+              </Link>
             </li>
           ))}
         {availableUsers && availableUsers.length === 0 && (
